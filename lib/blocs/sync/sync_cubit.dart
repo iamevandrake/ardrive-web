@@ -37,7 +37,7 @@ class SyncCubit extends Cubit<SyncState> {
         _db = db,
         super(SyncIdle()) {
     // Sync the user's drives on start and periodically.
-    _syncSub = interval(const Duration(minutes: 2))
+    _syncSub = Stream.periodic(const Duration(minutes: 2))
         .startWith(null)
         // Do not start another sync until the previous sync has completed.
         .exhaustMap((value) => Stream.fromFuture(startSync()))
