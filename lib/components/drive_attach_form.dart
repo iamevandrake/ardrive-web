@@ -5,15 +5,14 @@ import 'package:ardrive/services/services.dart';
 import 'package:ardrive/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:meta/meta.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
 import 'components.dart';
 
 Future<void> attachDrive(
-        {@required BuildContext context,
-        String initialDriveId,
-        String driveName}) =>
+        {required BuildContext context,
+        String? initialDriveId,
+        String? driveName}) =>
     showDialog(
       context: context,
       builder: (BuildContext context) => BlocProvider<DriveAttachCubit>(
@@ -104,12 +103,12 @@ class DriveAttachForm extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              child: Text('CANCEL'),
               onPressed: () => Navigator.of(context).pop(null),
+              child: Text('CANCEL'),
             ),
             ElevatedButton(
-              child: Text('ATTACH'),
               onPressed: () => context.read<DriveAttachCubit>().submit(),
+              child: Text('ATTACH'),
             ),
           ],
         ),

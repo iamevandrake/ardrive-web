@@ -25,14 +25,14 @@ class ProfileAuthAddScreen extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        state.isExistingUser
+                        state.isExistingUser!
                             ? 'WELCOME BACK'
                             : 'LET\'S GET STARTED',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headline5,
                       ),
                       const SizedBox(height: 32),
-                      if (state.isExistingUser)
+                      if (state.isExistingUser!)
                         Text(
                             'Please provide the same password as the one you used before.',
                             textAlign: TextAlign.center)
@@ -60,7 +60,7 @@ class ProfileAuthAddScreen extends StatelessWidget {
                         ),
                         validationMessages: (_) => kValidationMessages,
                       ),
-                      if (!state.isExistingUser) ...{
+                      if (!state.isExistingUser!) ...{
                         const SizedBox(height: 16),
                         ReactiveTextField(
                           formControlName: 'passwordConfirmation',
@@ -113,20 +113,20 @@ class ProfileAuthAddScreen extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          child: Text('ADD PROFILE'),
                           onPressed: () =>
                               context.read<ProfileAddCubit>().submit(),
+                          child: Text('ADD PROFILE'),
                         ),
                       ),
                       const SizedBox(height: 16),
                       TextButton(
+                        onPressed: () =>
+                            context.read<ProfileAddCubit>().promptForWallet(),
                         child: context
                                 .read<ProfileAddCubit>()
                                 .isArconnectInstalled()
                             ? Text('LOG OUT')
                             : Text('Change wallet'),
-                        onPressed: () =>
-                            context.read<ProfileAddCubit>().promptForWallet(),
                       ),
                     ],
                   ),

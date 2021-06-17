@@ -18,21 +18,21 @@ import 'package:reactive_forms/reactive_forms.dart';
 part 'profile_add_state.dart';
 
 class ProfileAddCubit extends Cubit<ProfileAddState> {
-  FormGroup form;
+  late FormGroup form;
 
-  Wallet _wallet;
-  ProfileType profileType;
-  String walletAddressOnLoad;
-  List<TransactionCommonMixin> _driveTxs;
+  Wallet? _wallet;
+  ProfileType? profileType;
+  String? walletAddressOnLoad;
+  late List<TransactionCommonMixin> _driveTxs;
 
   final ProfileCubit _profileCubit;
   final ProfileDao _profileDao;
   final ArweaveService _arweave;
   ProfileAddCubit({
-    @required ProfileCubit profileCubit,
-    @required ProfileDao profileDao,
-    @required ArweaveService arweave,
-    @required BuildContext context,
+    required ProfileCubit profileCubit,
+    required ProfileDao profileDao,
+    required ArweaveService arweave,
+    required BuildContext context,
   })  : _profileCubit = profileCubit,
         _profileDao = profileDao,
         _arweave = arweave,
@@ -54,7 +54,7 @@ class ProfileAddCubit extends Cubit<ProfileAddState> {
 
     _wallet = Wallet.fromJwk(json.decode(walletJson));
     _driveTxs =
-        await _arweave.getUniqueUserDriveEntityTxs(await _wallet.getAddress());
+        await _arweave.getUniqueUserDriveEntityTxs(await _wallet!.getAddress());
 
     if (_driveTxs.isEmpty) {
       emit(ProfileAddOnboardingNewUser());
@@ -78,7 +78,7 @@ class ProfileAddCubit extends Cubit<ProfileAddState> {
       walletAddressOnLoad = await arconnect.getWalletAddress();
 
       _driveTxs =
-          await _arweave.getUniqueUserDriveEntityTxs(walletAddressOnLoad);
+          await _arweave.getUniqueUserDriveEntityTxs(walletAddressOnLoad!);
 
       if (_driveTxs.isEmpty) {
         emit(ProfileAddOnboardingNewUser());
@@ -96,7 +96,7 @@ class ProfileAddCubit extends Cubit<ProfileAddState> {
     setupForm(withPasswordConfirmation: true);
   }
 
-  void setupForm({bool withPasswordConfirmation}) {
+  void setupForm({required bool withPasswordConfirmation}) {
     form = FormGroup(
       {
         'username': FormControl(validators: [Validators.required]),
@@ -124,11 +124,11 @@ class ProfileAddCubit extends Cubit<ProfileAddState> {
       emit(ProfileAddFailiure());
       return;
     }
-    final previousState = state;
+    final ProfileAddState previousState = state;
     emit(ProfileAddInProgress());
 
     final username = form.control('username').value.toString().trim();
-    final String password = form.control('password').value;
+    final String? password = form.control('password').value;
 
     final privateDriveTxs = _driveTxs.where(
         (tx) => tx.getTag(EntityTag.drivePrivacy) == DrivePrivacy.private);
@@ -136,13 +136,13 @@ class ProfileAddCubit extends Cubit<ProfileAddState> {
     // Try and decrypt one of the user's private drive entities to check if they are entering the
     // right password.
     if (privateDriveTxs.isNotEmpty) {
-      final checkDriveId = privateDriveTxs.first.getTag(EntityTag.driveId);
-      final signature = _wallet != null ? _wallet.sign : arconnect.getSignature;
+      final checkDriveId = privateDriveTxs.first.getTag(EntityTag.driveId)!;
+      final signature = _wallet != null ? _wallet!.sign : arconnect.getSignature;
 
       final checkDriveKey = await deriveDriveKey(
         signature,
         checkDriveId,
-        password,
+        password!,
       );
 
       final privateDrive = await _arweave.getLatestDriveEntityWithId(
@@ -163,13 +163,13 @@ class ProfileAddCubit extends Cubit<ProfileAddState> {
       }
     }
     if (_wallet != null) {
-      await _profileDao.addProfile(username, password, _wallet);
+      await _profileDao.addProfile(username, password!, _wallet!);
     } else {
       final walletAddress = await arconnect.getWalletAddress();
       final walletPublicKey = await arconnect.getPublicKey();
       await _profileDao.addProfileArconnect(
         username,
-        password,
+        password!,
         walletAddress,
         walletPublicKey,
       );

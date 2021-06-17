@@ -8,8 +8,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'components.dart';
 
 Future<void> promptToShareDrive({
-  @required BuildContext context,
-  @required String driveId,
+  required BuildContext context,
+  required String? driveId,
 }) =>
     showDialog(
       context: context,
@@ -51,7 +51,7 @@ class _DriveShareDialogState extends State<DriveShareDialog> {
                   const Center(child: CircularProgressIndicator())
                 else if (state is DriveShareLoadSuccess) ...{
                   ListTile(
-                    title: Text(state.driveName),
+                    title: Text(state.driveName!),
                     contentPadding: EdgeInsets.zero,
                   ),
                   Row(
@@ -65,7 +65,6 @@ class _DriveShareDialogState extends State<DriveShareDialog> {
                       ),
                       const SizedBox(width: 16),
                       TextButton(
-                        child: Text('Copy link'),
                         style: TextButton.styleFrom(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 16)),
@@ -79,6 +78,7 @@ class _DriveShareDialogState extends State<DriveShareDialog> {
                           Clipboard.setData(
                               ClipboardData(text: shareLinkController.text));
                         },
+                        child: Text('Copy link'),
                       ),
                     ],
                   ),
@@ -94,8 +94,8 @@ class _DriveShareDialogState extends State<DriveShareDialog> {
           actions: [
             if (state is DriveShareLoadSuccess)
               ElevatedButton(
-                child: Text('DONE'),
                 onPressed: () => Navigator.pop(context),
+                child: Text('DONE'),
               ),
           ],
         ),

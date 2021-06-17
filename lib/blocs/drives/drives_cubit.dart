@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:ardrive/models/models.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
-import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -18,12 +16,12 @@ class DrivesCubit extends Cubit<DrivesState> {
   final ProfileCubit _profileCubit;
   final DriveDao _driveDao;
 
-  StreamSubscription _drivesSubscription;
+  late StreamSubscription _drivesSubscription;
 
   DrivesCubit({
-    String initialSelectedDriveId,
-    @required ProfileCubit profileCubit,
-    @required DriveDao driveDao,
+    String? initialSelectedDriveId,
+    required ProfileCubit profileCubit,
+    required DriveDao driveDao,
   })  : _profileCubit = profileCubit,
         _driveDao = driveDao,
         super(DrivesLoadInProgress()) {
@@ -31,12 +29,12 @@ class DrivesCubit extends Cubit<DrivesState> {
       _driveDao
           .allDrives(order: OrderBy([OrderingTerm.asc(_driveDao.drives.name)]))
           .watch(),
-      _profileCubit.stream.startWith(null),
+      _profileCubit.stream.startWith(ProfileCheckingAvailability()),
       (drives, _) => drives,
     ).listen((drives) async {
       final state = this.state;
 
-      String selectedDriveId;
+      String? selectedDriveId;
       if (state is DrivesLoadSuccess && state.selectedDriveId != null) {
         selectedDriveId = state.selectedDriveId;
       } else {
@@ -47,7 +45,7 @@ class DrivesCubit extends Cubit<DrivesState> {
       final profile = _profileCubit.state;
       //TODO: Again why is wallet.getAddress() used instead of walletAddress
       final walletAddress =
-          profile is ProfileLoggedIn ? await profile.walletAddress : '';
+          profile is ProfileLoggedIn ? profile.walletAddress : '';
       //TODO: Some way to tell if the owner of the wallet is logged in?
       emit(
         DrivesLoadSuccess(
@@ -69,7 +67,7 @@ class DrivesCubit extends Cubit<DrivesState> {
     });
   }
 
-  void selectDrive(String driveId) {
+  void selectDrive(String? driveId) {
     final state = this.state as DrivesLoadSuccess;
     emit(state.copyWith(selectedDriveId: driveId));
   }

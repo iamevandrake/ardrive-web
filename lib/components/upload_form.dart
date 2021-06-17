@@ -11,8 +11,8 @@ import 'components.dart';
 
 Future<void> promptToUploadFile(
   BuildContext context, {
-  @required String driveId,
-  @required String folderId,
+  required String? driveId,
+  required String? folderId,
   bool allowSelectMultiple = false,
 }) async {
   final selectedFiles = allowSelectMultiple
@@ -74,12 +74,12 @@ class UploadForm extends StatelessWidget {
               ),
               actions: <Widget>[
                 TextButton(
-                  child: Text('CANCEL'),
                   onPressed: () => Navigator.of(context).pop(false),
+                  child: Text('CANCEL'),
                 ),
                 ElevatedButton(
-                  child: Text('CONTINUE'),
                   onPressed: () => context.read<UploadCubit>().prepareUpload(),
+                  child: Text('CONTINUE'),
                 ),
               ],
             );
@@ -105,8 +105,8 @@ class UploadForm extends StatelessWidget {
               ),
               actions: <Widget>[
                 TextButton(
-                  child: Text('OK'),
                   onPressed: () => Navigator.of(context).pop(false),
+                  child: Text('OK'),
                 ),
               ],
             );
@@ -136,8 +136,8 @@ class UploadForm extends StatelessWidget {
               ),
               actions: <Widget>[
                 TextButton(
-                  child: Text('CLOSE'),
                   onPressed: () => Navigator.of(context).pop(false),
+                  child: Text('CLOSE'),
                 ),
               ],
             );
@@ -159,7 +159,7 @@ class UploadForm extends StatelessWidget {
                             for (final file in state.files) ...{
                               ListTile(
                                 contentPadding: EdgeInsets.zero,
-                                title: Text(file.entity.name),
+                                title: Text(file.entity.name!),
                                 subtitle: Text(filesize(file.size)),
                               ),
                             },
@@ -175,8 +175,8 @@ class UploadForm extends StatelessWidget {
                           TextSpan(text: 'Cost: ${state.arUploadCost} AR'),
                           if (state.usdUploadCost != null)
                             TextSpan(
-                                text: state.usdUploadCost >= 0.01
-                                    ? ' (~${state.usdUploadCost.toStringAsFixed(2)} USD)'
+                                text: state.usdUploadCost! >= 0.01
+                                    ? ' (~${state.usdUploadCost!.toStringAsFixed(2)} USD)'
                                     : ' (< 0.01 USD)'),
                         ],
                         style: Theme.of(context).textTheme.bodyText1,
@@ -200,21 +200,21 @@ class UploadForm extends StatelessWidget {
               ),
               actions: <Widget>[
                 TextButton(
-                  child: Text('CANCEL'),
                   onPressed: () => Navigator.of(context).pop(false),
+                  child: Text('CANCEL'),
                 ),
                 ElevatedButton(
-                  child: Text('UPLOAD'),
                   onPressed: state.sufficientArBalance
                       ? () => context.read<UploadCubit>().startUpload()
                       : null,
+                  child: Text('UPLOAD'),
                 ),
               ],
             );
           } else if (state is UploadInProgress) {
             return AppDialog(
               dismissable: false,
-              title: 'Uploading ${state.files.length} file(s)...',
+              title: 'Uploading ${state.files!.length} file(s)...',
               content: SizedBox(
                 width: kMediumDialogWidth,
                 child: ConstrainedBox(
@@ -223,10 +223,10 @@ class UploadForm extends StatelessWidget {
                     child: ListView(
                       shrinkWrap: true,
                       children: [
-                        for (final file in state.files) ...{
+                        for (final file in state.files!) ...{
                           ListTile(
                             contentPadding: EdgeInsets.zero,
-                            title: Text(file.entity.name),
+                            title: Text(file.entity.name!),
                             subtitle: Text(
                                 '${filesize(file.uploadedSize)}/${filesize(file.size)}'),
                             trailing: CircularProgressIndicator(

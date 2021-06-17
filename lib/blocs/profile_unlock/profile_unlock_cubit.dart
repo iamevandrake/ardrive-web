@@ -21,8 +21,8 @@ class ProfileUnlockCubit extends Cubit<ProfileUnlockState> {
   final ProfileDao _profileDao;
 
   ProfileUnlockCubit({
-    @required ProfileCubit profileCubit,
-    @required ProfileDao profileDao,
+    required ProfileCubit profileCubit,
+    required ProfileDao profileDao,
   })  : _profileCubit = profileCubit,
         _profileDao = profileDao,
         super(ProfileUnlockInitializing()) {

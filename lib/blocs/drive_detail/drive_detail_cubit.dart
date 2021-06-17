@@ -14,19 +14,19 @@ import '../blocs.dart';
 part 'drive_detail_state.dart';
 
 class DriveDetailCubit extends Cubit<DriveDetailState> {
-  final String driveId;
+  final String? driveId;
   final ProfileCubit _profileCubit;
   final DriveDao _driveDao;
   final AppConfig _config;
 
-  StreamSubscription _folderSubscription;
+  StreamSubscription? _folderSubscription;
 
   DriveDetailCubit({
-    @required this.driveId,
-    String initialFolderId,
-    @required ProfileCubit profileCubit,
-    @required DriveDao driveDao,
-    @required AppConfig config,
+    required this.driveId,
+    String? initialFolderId,
+    required ProfileCubit profileCubit,
+    required DriveDao driveDao,
+    required AppConfig config,
   })  : _profileCubit = profileCubit,
         _driveDao = driveDao,
         _config = config,
@@ -50,7 +50,7 @@ class DriveDetailCubit extends Cubit<DriveDetailState> {
   }
 
   void openFolder(
-      {@required String path,
+      {required String? path,
       DriveOrder contentOrderBy = DriveOrder.name,
       OrderingMode contentOrderingMode = OrderingMode.asc}) {
     emit(DriveDetailLoadInProgress());
@@ -58,20 +58,20 @@ class DriveDetailCubit extends Cubit<DriveDetailState> {
     unawaited(_folderSubscription?.cancel());
 
     _folderSubscription =
-        Rx.combineLatest3<Drive, FolderWithContents, ProfileState, void>(
+        Rx.combineLatest3<Drive?, FolderWithContents, ProfileState, void>(
       _driveDao.driveById(driveId: driveId).watchSingleOrNull(),
       _driveDao.watchFolderContents(driveId,
           folderPath: path,
           orderBy: contentOrderBy,
           orderingMode: contentOrderingMode),
-      _profileCubit.stream.startWith(null),
+      _profileCubit.stream.startWith(ProfileCheckingAvailability()),
       (drive, folderContents, _) async {
         if (drive == null) {
           emit(DriveDetailLoadNotFound());
           return;
         }
 
-        if (folderContents?.folder == null) {
+        if (folderContents.folder == null) {
           // Emit the loading state as it can be a while between the drive being not found, then added,
           // and then the folders being loaded.
           emit(DriveDetailLoadInProgress());
@@ -96,7 +96,7 @@ class DriveDetailCubit extends Cubit<DriveDetailState> {
     ).listen((_) {});
   }
 
-  Future<void> selectItem(String itemId, {bool isFolder = false}) async {
+  Future<void> selectItem(String? itemId, {bool isFolder = false}) async {
     var state = this.state as DriveDetailLoadSuccess;
 
     state = state.copyWith(
@@ -104,13 +104,13 @@ class DriveDetailCubit extends Cubit<DriveDetailState> {
       selectedItemIsFolder: isFolder,
     );
 
-    if (state.currentDrive.isPublic && !isFolder) {
-      final fileWithRevisions = await _driveDao.latestFileRevisionByFileId(
+    if (state.currentDrive!.isPublic && !isFolder) {
+      final fileWithRevisions = _driveDao.latestFileRevisionByFileId(
           driveId: driveId, fileId: state.selectedItemId);
       final dataTxId = (await fileWithRevisions.getSingle()).dataTxId;
       state = state.copyWith(
           selectedFilePreviewUrl:
-              Uri.parse('${_config.defaultArweaveGatewayUrl}/${dataTxId}'));
+              Uri.parse('${_config.defaultArweaveGatewayUrl}/$dataTxId'));
     }
 
     emit(state);
@@ -121,7 +121,7 @@ class DriveDetailCubit extends Cubit<DriveDetailState> {
       OrderingMode contentOrderingMode = OrderingMode.asc}) {
     final state = this.state as DriveDetailLoadSuccess;
     openFolder(
-        path: state.currentFolder.folder.path,
+        path: state.currentFolder!.folder!.path,
         contentOrderBy: contentOrderBy,
         contentOrderingMode: contentOrderingMode);
   }

@@ -7,7 +7,6 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
-import 'package:moor/moor.dart';
 
 class DriveFileDropZone extends StatefulWidget {
   @override
@@ -15,7 +14,7 @@ class DriveFileDropZone extends StatefulWidget {
 }
 
 class _DriveFileDropZoneState extends State<DriveFileDropZone> {
-  DropzoneViewController controller;
+  late DropzoneViewController controller;
   bool isHovering = false;
   bool isCurrentlyShown = false;
   @override
@@ -40,8 +39,8 @@ class _DriveFileDropZoneState extends State<DriveFileDropZone> {
                     operation: DragOperation.all,
                     onDrop: (htmlFile) => _onDrop(
                       htmlFile,
-                      driveId: state.currentDrive.id,
-                      folderId: state.currentFolder.folder.id,
+                      driveId: state.currentDrive!.id,
+                      folderId: state.currentFolder!.folder!.id,
                       context: context,
                     ),
                     onHover: _onHover,
@@ -61,9 +60,9 @@ class _DriveFileDropZoneState extends State<DriveFileDropZone> {
 
   Future<void> _onDrop(
     htmlFile, {
-    BuildContext context,
-    @required String driveId,
-    @required String folderId,
+    BuildContext? context,
+    required String? driveId,
+    required String? folderId,
   }) async {
     if (!isCurrentlyShown) {
       isCurrentlyShown = true;
@@ -83,7 +82,7 @@ class _DriveFileDropZoneState extends State<DriveFileDropZone> {
       final selectedFiles = <XFile>[fileToUpload];
 
       await showDialog(
-        context: context,
+        context: context!,
         builder: (_) => BlocProvider<UploadCubit>(
           create: (context) => UploadCubit(
             driveId: driveId,

@@ -8,9 +8,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'components.dart';
 
 Future<void> promptToShareFile({
-  @required BuildContext context,
-  @required String driveId,
-  @required String fileId,
+  required BuildContext context,
+  required String? driveId,
+  required String? fileId,
 }) =>
     showDialog(
       context: context,
@@ -54,7 +54,7 @@ class _FileShareDialogState extends State<FileShareDialog> {
                   const Center(child: CircularProgressIndicator())
                 else if (state is FileShareLoadSuccess) ...{
                   ListTile(
-                    title: Text(state.fileName),
+                    title: Text(state.fileName!),
                     contentPadding: EdgeInsets.zero,
                   ),
                   Row(
@@ -68,7 +68,6 @@ class _FileShareDialogState extends State<FileShareDialog> {
                       ),
                       const SizedBox(width: 16),
                       TextButton(
-                        child: Text('Copy link'),
                         style: TextButton.styleFrom(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 16)),
@@ -82,6 +81,7 @@ class _FileShareDialogState extends State<FileShareDialog> {
                           Clipboard.setData(
                               ClipboardData(text: shareLinkController.text));
                         },
+                        child: Text('Copy link'),
                       ),
                     ],
                   ),
@@ -97,8 +97,8 @@ class _FileShareDialogState extends State<FileShareDialog> {
           actions: [
             if (state is FileShareLoadSuccess)
               ElevatedButton(
-                child: Text('DONE'),
                 onPressed: () => Navigator.pop(context),
+                child: Text('DONE'),
               ),
           ],
         ),

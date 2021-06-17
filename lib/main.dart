@@ -11,9 +11,9 @@ import 'pages/pages.dart';
 import 'services/services.dart';
 import 'theme/theme.dart';
 
-ConfigService configService;
-AppConfig config;
-ArweaveService arweave;
+late ConfigService configService;
+AppConfig? config;
+ArweaveService? arweave;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -21,7 +21,7 @@ void main() async {
   config = await configService.getConfig();
 
   arweave = ArweaveService(
-      Arweave(gatewayUrl: Uri.parse(config.defaultArweaveGatewayUrl)));
+      Arweave(gatewayUrl: Uri.parse(config!.defaultArweaveGatewayUrl!)));
   Future.delayed(Duration(hours: 12), () {
     window.location.reload();
   });
@@ -40,9 +40,9 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) => MultiRepositoryProvider(
         providers: [
-          RepositoryProvider<ArweaveService>(create: (_) => arweave),
+          RepositoryProvider<ArweaveService?>(create: (_) => arweave),
           RepositoryProvider<PstService>(create: (_) => PstService()),
-          RepositoryProvider<AppConfig>(create: (_) => config),
+          RepositoryProvider<AppConfig?>(create: (_) => config),
           RepositoryProvider<Database>(create: (_) => Database()),
           RepositoryProvider<ProfileDao>(
               create: (context) => context.read<Database>().profileDao),
@@ -65,7 +65,7 @@ class _AppState extends State<App> {
               textColor: kOnSurfaceBodyTextColor,
               iconColor: kOnSurfaceBodyTextColor,
               child: Portal(
-                child: child,
+                child: child!,
               ),
             ),
           ),

@@ -44,8 +44,8 @@ class DriveCreateForm extends StatelessWidget {
                       Text('You do not have sufficient AR to create a drive.')),
               actions: [
                 TextButton(
-                  child: Text('CANCEL'),
                   onPressed: () => Navigator.of(context).pop(),
+                  child: Text('CANCEL'),
                 ),
               ],
             );
@@ -92,12 +92,12 @@ class DriveCreateForm extends StatelessWidget {
               ),
               actions: [
                 TextButton(
-                  child: Text('CANCEL'),
                   onPressed: () => Navigator.of(context).pop(),
+                  child: Text('CANCEL'),
                 ),
                 ElevatedButton(
-                  child: Text('CREATE'),
                   onPressed: () => context.read<DriveCreateCubit>().submit(),
+                  child: Text('CREATE'),
                 ),
               ],
             );
