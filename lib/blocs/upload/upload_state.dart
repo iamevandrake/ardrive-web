@@ -53,6 +53,8 @@ class UploadReady extends UploadState {
 
   final List<FileUploadHandle> files;
 
+  final BundleHandle? bundleHandle;
+
   UploadReady({
     required this.arUploadCost,
     required this.pstFee,
@@ -60,6 +62,7 @@ class UploadReady extends UploadState {
     required this.sufficientArBalance,
     required this.uploadIsPublic,
     required this.files,
+    this.bundleHandle,
     this.usdUploadCost,
   });
 
@@ -70,7 +73,8 @@ class UploadReady extends UploadState {
         pstFee,
         totalCost,
         sufficientArBalance,
-        files
+        files,
+        bundleHandle,
       ];
 }
 

@@ -15,6 +15,7 @@ import 'package:pedantic/pedantic.dart';
 import 'package:uuid/uuid.dart';
 
 import '../blocs.dart';
+import 'bundle_handle.dart';
 import 'file_upload_handle.dart';
 
 part 'upload_state.dart';
@@ -41,6 +42,8 @@ class UploadCubit extends Cubit<UploadState> {
 
   /// The [Transaction] that pays `pstFee` to a random PST holder.
   Transaction? feeTx;
+
+  final bool useBundles = true;
 
   UploadCubit({
     required this.driveId,
@@ -119,67 +122,80 @@ class UploadCubit extends Cubit<UploadState> {
       return;
     }
 
-    try {
-      for (final file in files) {
-        final uploadHandle = await prepareFileUpload(file);
-        _fileUploadHandles[uploadHandle.entity.id!] = uploadHandle;
+    if (useBundles) {
+      try {
+        final multiFileUploadHandle = await prepareBundleUpload(files);
+
+        for (final fileUploadHandle
+            in multiFileUploadHandle.fileUploadHandles) {
+          _fileUploadHandles[fileUploadHandle.entity.id!] = fileUploadHandle;
+        }
+      } catch (err) {
+        addError(err);
+        return;
       }
-    } catch (err) {
-      addError(err);
-      return;
-    }
+    } else {
+      try {
+        for (final file in files) {
+          final uploadHandle = await prepareFileUpload(file);
+          _fileUploadHandles[uploadHandle.entity.id!] = uploadHandle;
+        }
+      } catch (err) {
+        addError(err);
+        return;
+      }
 
-    final uploadCost = _fileUploadHandles.values
-        .map((f) => f.cost)
-        .reduce((total, cost) => total + cost);
+      final uploadCost = _fileUploadHandles.values
+          .map((f) => f.cost)
+          .reduce((total, cost) => total + cost);
 
-    var pstFee = await _pst
-        .getPstFeePercentage()
-        .then((feePercentage) =>
-            // Workaround [BigInt] percentage division problems
-            // by first multiplying by the percentage * 100 and then dividing by 100.
-            uploadCost * BigInt.from(feePercentage * 100) ~/ BigInt.from(100))
-        .catchError((_) => BigInt.zero,
-            test: (err) => err is UnimplementedError);
+      var pstFee = await _pst
+          .getPstFeePercentage()
+          .then((feePercentage) =>
+              // Workaround [BigInt] percentage division problems
+              // by first multiplying by the percentage * 100 and then dividing by 100.
+              uploadCost * BigInt.from(feePercentage * 100) ~/ BigInt.from(100))
+          .catchError((_) => BigInt.zero,
+              test: (err) => err is UnimplementedError);
 
-    final minimumPstTip = BigInt.from(10000000);
-    pstFee = pstFee > minimumPstTip ? pstFee : minimumPstTip;
+      final minimumPstTip = BigInt.from(10000000);
+      pstFee = pstFee > minimumPstTip ? pstFee : minimumPstTip;
 
-    if (pstFee > BigInt.zero) {
-      feeTx = await _arweave.client.transactions.prepare(
-        Transaction(
-          target: await _pst.getWeightedPstHolder(),
-          quantity: pstFee,
+      if (pstFee > BigInt.zero) {
+        feeTx = await _arweave.client.transactions.prepare(
+          Transaction(
+            target: await _pst.getWeightedPstHolder(),
+            quantity: pstFee,
+          ),
+          profile.wallet,
+        )
+          ..addApplicationTags()
+          ..addTag('Type', 'fee')
+          ..addTag(TipType.tagName, TipType.dataUpload);
+        await feeTx!.sign(profile.wallet);
+      }
+
+      final totalCost = uploadCost + pstFee;
+
+      final arUploadCost = winstonToAr(totalCost);
+      final usdUploadCost = await _arweave.getArUsdConversionRate().then(
+          (conversionRate) => double.parse(arUploadCost) * conversionRate);
+      if (await _profileCubit.checkIfWalletMismatch()) {
+        emit(UploadWalletMismatch());
+        return;
+      }
+      emit(
+        UploadReady(
+          arUploadCost: arUploadCost,
+          usdUploadCost: usdUploadCost,
+          pstFee: pstFee,
+          totalCost: totalCost,
+          uploadIsPublic: _targetDrive.isPublic,
+          sufficientArBalance: profile.walletBalance >= totalCost,
+          files: _fileUploadHandles.values.toList(),
         ),
-        profile.wallet,
-      )
-        ..addApplicationTags()
-        ..addTag('Type', 'fee')
-        ..addTag(TipType.tagName, TipType.dataUpload);
-      await feeTx!.sign(profile.wallet);
+      );
     }
-
-    final totalCost = uploadCost + pstFee;
-
-    final arUploadCost = winstonToAr(totalCost);
-    final usdUploadCost = await _arweave
-        .getArUsdConversionRate()
-        .then((conversionRate) => double.parse(arUploadCost) * conversionRate);
-    if (await _profileCubit.checkIfWalletMismatch()) {
-      emit(UploadWalletMismatch());
-      return;
-    }
-    emit(
-      UploadReady(
-        arUploadCost: arUploadCost,
-        usdUploadCost: usdUploadCost,
-        pstFee: pstFee,
-        totalCost: totalCost,
-        uploadIsPublic: _targetDrive.isPublic,
-        sufficientArBalance: profile.walletBalance >= totalCost,
-        files: _fileUploadHandles.values.toList(),
-      ),
-    );
   }
 
   Future<void> startUpload() async {
@@ -249,27 +265,12 @@ class UploadCubit extends Cubit<UploadState> {
 
     final uploadHandle = FileUploadHandle(entity: fileEntity, path: filePath);
 
-    // Only use [DataBundle]s if the file being uploaded can be serialised as one.
-    // The limitation occurs as a result of string size limitations in JS implementations which is about 512MB.
-    // We aim switch slightly below that to give ourselves some buffer.
-    //
-    // TODO: Reenable once we understand the problems with data bundle transactions.
-    final fileSizeWithinBundleLimits =
-        fileData.lengthInBytes < (512 - 12) * math.pow(10, 6);
-
-    if (fileSizeWithinBundleLimits) {
-      uploadHandle.dataTx = private
-          ? await createEncryptedDataItem(fileData, fileKey!)
-          : DataItem.withBlobData(data: fileData);
-      uploadHandle.dataTx!.setOwner(await profile.wallet.getOwner());
-    } else {
-      uploadHandle.dataTx = await _arweave.client.transactions.prepare(
-        private
-            ? await createEncryptedTransaction(fileData, fileKey!)
-            : Transaction.withBlobData(data: fileData),
-        profile.wallet,
-      );
-    }
+    uploadHandle.dataTx = await _arweave.client.transactions.prepare(
+      private
+          ? await createEncryptedTransaction(fileData, fileKey!)
+          : Transaction.withBlobData(data: fileData),
+      profile.wallet,
+    );
 
     uploadHandle.dataTx!.addApplicationTags();
 
@@ -285,24 +286,81 @@ class UploadCubit extends Cubit<UploadState> {
 
     fileEntity.dataTxId = uploadHandle.dataTx!.id;
 
-    if (fileSizeWithinBundleLimits) {
-      uploadHandle.entityTx = await _arweave.prepareEntityDataItem(
-          fileEntity, profile.wallet, fileKey);
-      uploadHandle.bundleTx = await _arweave.prepareDataBundleTx(
-        DataBundle(
-          items: [
-            (uploadHandle.entityTx as DataItem?)!,
-            (uploadHandle.dataTx as DataItem?)!,
-          ],
-        ),
-        profile.wallet,
-      );
-    } else {
-      uploadHandle.entityTx =
-          await _arweave.prepareEntityTx(fileEntity, profile.wallet, fileKey);
-    }
+    uploadHandle.entityTx =
+        await _arweave.prepareEntityTx(fileEntity, profile.wallet, fileKey);
 
     return uploadHandle;
+  }
+
+  Future<BundleHandle> prepareBundleUpload(List<XFile> files) async {
+    final profile = _profileCubit.state as ProfileLoggedIn;
+    final dataItems = [];
+    final uploadHandles = [];
+    for (var file in files) {
+      final fileName = file.name;
+      final filePath = '${_targetFolder.path}/$fileName';
+      final fileEntity = FileEntity(
+        driveId: _targetDrive.id,
+        name: fileName,
+        size: await file.length(),
+        lastModifiedDate: await file.lastModified(),
+        parentFolderId: _targetFolder.id,
+        dataContentType: lookupMimeType(fileName) ?? 'application/octet-stream',
+      );
+
+      // If this file conflicts with one that already exists in the target folder reuse the id of the conflicting file.
+      fileEntity.id = conflictingFiles[fileName] ?? _uuid.v4();
+
+      final private = _targetDrive.isPrivate;
+      final driveKey = private
+          ? await _driveDao.getDriveKey(_targetDrive.id, profile.cipherKey)
+          : null;
+      final fileKey =
+          private ? await deriveFileKey(driveKey!, fileEntity.id!) : null;
+
+      final fileData = await file.readAsBytes();
+
+      final dataTx = private
+          ? await createEncryptedDataItem(fileData, fileKey!)
+          : DataItem.withBlobData(data: fileData);
+      dataTx.setOwner(await profile.wallet.getOwner());
+
+      dataTx.addApplicationTags();
+
+      // Don't include the file's Content-Type tag if it is meant to be private.
+      if (!private) {
+        dataTx.addTag(
+          EntityTag.contentType,
+          fileEntity.dataContentType!,
+        );
+      }
+
+      await dataTx.sign(profile.wallet);
+
+      fileEntity.dataTxId = dataTx.id;
+
+      final entityTx = await _arweave.prepareEntityDataItem(
+          fileEntity, profile.wallet, fileKey);
+      dataItems.addAll([
+        entityTx,
+        dataTx,
+      ]);
+      uploadHandles.add(FileUploadHandle(
+        entity: fileEntity,
+        dataTx: dataTx,
+        entityTx: entityTx,
+        path: filePath,
+      ));
+    }
+
+    final bundleTx = await _arweave.prepareDataBundleTx(
+      DataBundle(items: dataItems as List<DataItem>),
+      profile.wallet,
+    );
+    return BundleHandle(
+      fileUploadHandles: uploadHandles as List<FileUploadHandle>,
+      bundleTx: bundleTx,
+    );
   }
 
   @override
