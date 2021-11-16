@@ -33,14 +33,14 @@ class _ProfileAuthOnboardingState extends State<ProfileAuthOnboarding> {
               builder: (context) => Column(
                 children: [
                   Text(
-                    'WELCOME TO THE PERMAWEB',
+                    'WELCOME TO THE BLOCKWEB',
                     style: Theme.of(context).textTheme.headline5,
                   ),
                   const SizedBox(height: 32),
                   Text(
-                      'ArDrive isn’t just another cloud sync app. It’s the beginning of a permanent hard drive.'),
+                      'BlockDrive isn’t just another cloud sync app. It’s the beginning of a decentralized hard drive.'),
                   const SizedBox(height: 16),
-                  Text('Any files you upload here will outlive you!'),
+                  Text('Any files you upload here will likely outlive you!'),
                   const SizedBox(height: 16),
                   Text('That also means we do a few things differently.'),
                 ],
@@ -72,7 +72,7 @@ class _ProfileAuthOnboardingState extends State<ProfileAuthOnboarding> {
                   Text('No subscriptions are needed!'),
                   const SizedBox(height: 16),
                   Text(
-                      'Instead of another monthly charge for empty space you don’t use, pay a few cents once and store your files forever on ArDrive.'),
+                      'Instead of another monthly charge for empty space you don’t use, pay a few cents once and store your files on BlockDrive.'),
                 ],
               ),
             ),
@@ -95,15 +95,15 @@ class _ProfileAuthOnboardingState extends State<ProfileAuthOnboarding> {
               builder: (context) => Column(
                 children: [
                   Text(
-                    'SECONDS FROM FOREVER',
+                    'SECONDS FROM STORAGE',
                     style: Theme.of(context).textTheme.headline5,
                   ),
                   const SizedBox(height: 32),
                   Text(
-                      'Decentralized, permanent data storage doesn’t happen in an instant.'),
+                      'Decentralized data storage doesn’t happen in an instant.'),
                   const SizedBox(height: 16),
                   Text(
-                      'When the green checkmark appears next to your file, it has been uploaded to the PermaWeb.'),
+                      'When the green checkmark appears next to your file, it has been uploaded to the BlockWeb.'),
                 ],
               ),
             ),

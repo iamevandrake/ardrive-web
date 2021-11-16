@@ -56,7 +56,7 @@ class EntityTransactionParseException implements Exception {}
 extension TransactionUtils on TransactionBase {
   /// Tags this transaction with the app name, version, and the specified unix time.
   void addApplicationTags({DateTime? unixTime}) {
-    addTag(EntityTag.appName, 'ArDrive-Web');
+    addTag(EntityTag.appName, 'BlockDrive-Web');
     addTag(EntityTag.appVersion, '0.1.0');
     addTag(
         EntityTag.unixTime,

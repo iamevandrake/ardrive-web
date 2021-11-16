@@ -111,7 +111,7 @@ class ProfileAuthAddScreen extends StatelessWidget {
                                         TextSpan(text: 'I agree to the '),
                                         TextSpan(
                                           text:
-                                              'ArDrive terms of service and privacy policy',
+                                              'BlockDrive terms of service and privacy policy',
                                           style: TextStyle(
                                             decoration: TextDecoration.underline,
                                           ),

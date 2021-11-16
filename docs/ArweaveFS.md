@@ -37,9 +37,9 @@ All metadata transactions that store these entities unencrypted should define a 
 
 Drives can store either public or private data, indicated by the `Drive-Privacy` tag on the drive entity.
 
-If a Drive entity is private, an additional tag `Drive-Auth-Mode` is used to indicate how the Drive Key is derived.  ArDrive clients currently leverage a secure `password` along with the Arweave Wallet private key signature to derive the global Drive key.
+If a Drive entity is private, an additional tag `Drive-Auth-Mode` is used to indicate how the Drive Key is derived.  BlockDrive clients currently leverage a secure `password` along with the Arweave Wallet private key signature to derive the global Drive key.
 
-On every encrypted entity, a `Cipher` tag must be specified. The required public parameters for decrypting the data must also be specified with the parameter's tag name prefixed by `Cipher-*` eg. `Cipher-IV`. If the parameter is byte data it should be encoded as Base64 in the tag.  ArDrive clients currently leverage AES256-GCM for all symmetric encryption, which requires a Cipher Initialization Vector consisting of 12 random bytes.
+On every encrypted entity, a `Cipher` tag must be specified. The required public parameters for decrypting the data must also be specified with the parameter's tag name prefixed by `Cipher-*` eg. `Cipher-IV`. If the parameter is byte data it should be encoded as Base64 in the tag.  BlockDrive clients currently leverage AES256-GCM for all symmetric encryption, which requires a Cipher Initialization Vector consisting of 12 random bytes.
 
 Additionally, all encrypted transactions should have the `Content-Type` tag `application/octet-stream` as opposed to `application/json`.
 
@@ -180,7 +180,7 @@ Clients that want to provide users with a quick view of a single folder can simp
 
 GraphQL currently has a limit of 100 items returned per query.
 
-GraphQL is not optimized for ArDrive specific queries for drive, folder and file entity data.
+GraphQL is not optimized for BlockDrive specific queries for drive, folder and file entity data.
 
 ### Multi-User Dynamic Permissioned Drives
 

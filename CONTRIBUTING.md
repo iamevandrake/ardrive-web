@@ -1,4 +1,4 @@
-# Contributing to ArDrive
+# Contributing to BlockDrive
 
 ## Commit Message Format
 

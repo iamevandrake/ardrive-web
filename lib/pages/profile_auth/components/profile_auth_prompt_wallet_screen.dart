@@ -25,7 +25,7 @@ class ProfileAuthPromptWalletScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             Text(
-              'Your private and secure, decentralized, pay-as-you-go, censorship-resistant and permanent hard drive.',
+              'Your private and secure, decentralized, pay-as-you-go, censorship-resistant storage solution.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headline6,
             ),

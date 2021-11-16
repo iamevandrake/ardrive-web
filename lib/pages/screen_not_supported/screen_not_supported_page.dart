@@ -24,18 +24,18 @@ class ScreenNotSupportedPage extends StatelessWidget {
                 Text('WE\'RE SORRY!',
                     style: Theme.of(context).textTheme.headline5),
                 const SizedBox(height: 16),
-                Text('ArDrive is currently only optimized for larger screens.'),
+                Text('BlockDrive is currently only optimized for larger screens.'),
                 const SizedBox(height: 8),
-                Text(
-                    'Please try on another device or stay updated for our upcoming mobile app by subscribing to our newsletter below.'),
-                const SizedBox(height: 24),
-                Link(
-                  uri: Uri.parse('https://ardrive.io/about/newsletter/'),
-                  builder: (context, onPressed) => ElevatedButton(
-                    onPressed: onPressed,
-                    child: Text('SUBSCRIBE'),
-                  ),
-                ),
+                //Text(
+                    //'Please try on another device or stay updated for our upcoming mobile app by subscribing to our newsletter below.'),
+                //const SizedBox(height: 24),
+                //Link(
+                  //uri: Uri.parse('https://ardrive.io/about/newsletter/'),
+                  //builder: (context, onPressed) => ElevatedButton(
+                    //onPressed: onPressed,
+                    //child: Text('SUBSCRIBE'),
+                  //),
+                //),
               ],
             ),
           ),

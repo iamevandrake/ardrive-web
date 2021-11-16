@@ -56,7 +56,7 @@ class _AppState extends State<App> {
             db: context.read<Database>(),
           ),
           child: MaterialApp.router(
-            title: 'ArDrive',
+            title: 'BlockDrive',
             theme: appTheme(),
             debugShowCheckedModeBanner: false,
             routeInformationParser: _routeInformationParser,

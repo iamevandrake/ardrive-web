@@ -54,8 +54,8 @@ class SharedFilePage extends StatelessWidget {
                         fileKey: state.fileKey,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    _buildReturnToAppLink(),
+                    //const SizedBox(height: 16),
+                    //_buildReturnToAppLink(),
                   } else if (state is SharedFileNotFound) ...{
                     const Icon(Icons.error_outline, size: 36),
                     const SizedBox(height: 16),
@@ -63,8 +63,8 @@ class SharedFilePage extends StatelessWidget {
                       'The specified file does not exist.',
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 24),
-                    _buildReturnToAppLink(),
+                    //const SizedBox(height: 24),
+                    //_buildReturnToAppLink(),
                   }
                 ],
               ),
@@ -75,12 +75,12 @@ class SharedFilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildReturnToAppLink() => Link(
-        uri: Uri.parse('https://ardrive.io/'),
-        target: LinkTarget.blank,
-        builder: (context, onPressed) => TextButton(
-          onPressed: onPressed,
-          child: Text('Learn more about ArDrive'),
-        ),
-      );
+  // Widget _buildReturnToAppLink() => Link(
+        //uri: Uri.parse('https://ardrive.io/'),
+        //target: LinkTarget.blank,
+        //builder: (context, onPressed) => TextButton(
+          //onPressed: onPressed,
+          //child: Text('Learn more about BlockDrive'),
+        //),
+      //);
 }
